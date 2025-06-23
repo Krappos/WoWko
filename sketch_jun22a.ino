@@ -9,14 +9,14 @@
 
 //pointer pre optimalizíciu kodu
 // SSID Init + declaration
-const char* ssid = "WebServerNet";
-const char* password = "91575302";
+const char* ssid = "";
+const char* password = "";
 
 // ping status
 bool online = false;
 
 // device MAC adress
-uint8_t ServerMac[] = { 0x40, 0xA8, 0xF0, 0x2E, 0xB1, 0x8C };
+uint8_t ServerMac[] = { };
 // O4 -> testing - uint8_t ServerMac[] = { };
 
 // timing
@@ -26,7 +26,7 @@ const unsigned long interval = 10000;
 unsigned long previousMillis = 0;
 
 WebServer server(8080);            //opened port
-IPAddress target(192, 168, 1, 6);  // IP ping server
+IPAddress target(xxx.xxx.xxx.xxx);  // IP ping server
 WiFiUDP udp;
 
 void Pinger() {
