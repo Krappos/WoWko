@@ -9,14 +9,15 @@
 
 //pointer pre optimalizíciu kodu
 // SSID Init + declaration
-const char* ssid = " ";
-const char* password = " ";
+const char* ssid = "WebServerNet";
+const char* password = "91575302";
 
 // ping status
 bool online = false;
 
 // device MAC adress
-uint8_t ServerMac[] = { xxxx, xxxx, xxxx, xxxx, xxxx, xxxx };
+uint8_t ServerMac[] = { 0x40, 0xA8, 0xF0, 0x2E, 0xB1, 0x8C };
+// O4 -> testing - uint8_t ServerMac[] = { };
 
 // timing
 unsigned long startTime = millis();
@@ -25,7 +26,7 @@ const unsigned long interval = 10000;
 unsigned long previousMillis = 0;
 
 WebServer server(8080);            //opened port
-IPAddress target(xxx, xxx, x, x);  // IP ping server
+IPAddress target(192, 168, 1, 6);  // IP ping server
 WiFiUDP udp;
 
 void Pinger() {
@@ -65,9 +66,7 @@ void WiFiConnect() {
 
   if (WiFi.status() != WL_CONNECTED) {
     //Serial.println("Wi-Fi sa nepripojilo.");
-
   }
-  // Serial.print("Pripojené! IP adresa: ");
   // O2 -> testing - Serial.println(WiFi.localIP());
 }
 
@@ -79,15 +78,13 @@ void PingRepeat() {
     previousMillis = currentMillis;
 
     Pinger();
-    // O3 -> testing - Serial.println("10 sekund");
+    // O3 -> testing - Serial.println("pingujem");
   }
-
-  //  iný kód súbežne, bez blokovania.
 }
 
 void handleKlik() {
-  sendWOL()
-    server.send(200, "text/plain", "OK");
+  sendWOL();
+  server.send(200, "text/plain", "OK");
 }
 void setup() {
 
@@ -99,6 +96,11 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/klik", handleKlik);
   server.begin();
+
+  server.on("/online", HTTP_GET, []() {
+    String json = String("{\"online\":") + (online ? "true" : "false") + "}";
+    server.send(200, "application/json", json);
+  });
 
   previousMillis = millis();
 }
@@ -113,4 +115,4 @@ void loop() {
 // O1 -> vypis ssid overenie spravnosti siete
 // O2 -> vypis ip adresa siete
 // O3 -> testovanie millis
-
+// O4 -> testing mac free

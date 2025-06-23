@@ -3,6 +3,7 @@ const char* htmlPage PROGMEM = R"rawliteral(
 <html lang="en">
     <head>
         <title>WoWko</title>
+        <link rel="icon" type="image/x-icon" href="https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png">
         <meta charset="utf-8" />
         <meta
             name="viewport"
@@ -15,6 +16,12 @@ const char* htmlPage PROGMEM = R"rawliteral(
             crossorigin="anonymous"
         />
     </head>
+    <style>
+    body {
+  overflow-y: hidden;
+   overflow-x: hidden;
+        }
+    </style>
 
     <body>
         <header class="d-block d-sm-none">
@@ -54,14 +61,34 @@ const char* htmlPage PROGMEM = R"rawliteral(
        alert("diiik jak ma kliklo");
   }
 
-            var a=1;
-            if(a > 2){
+
+ async function updateStatus() {
+    try {
+      const response = await fetch("/online");
+      const data = await response.json();
+      ServerStatus(data.online);
+    } catch (e) {
+      console.error("Chyba pri fetchovaní /online:", e);
+      ServerStatus(false); // záložný fallback
+    }
+  }
+
+  // spusti hneď a potom opakuj každých 5 sekúnd:
+  updateStatus();
+  setInterval(updateStatus, 5000);
+
+     function ServerStatus(status){
+
+            if(status){ // if true then ->
                 document.getElementById("stats").innerText="on";
+                document.getElementById("stats").style.color="green";
             }
             else{
                 document.getElementById("stats").innerText="off";
+                document.getElementById("stats").style.color="red";
 
             }
+}
         </script>
     </body>
 </html>

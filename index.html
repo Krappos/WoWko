@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <title>WoWko</title>
+        <link rel="icon" type="image/x-icon" href="https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png">
         <meta charset="utf-8" />
         <meta
             name="viewport"
@@ -14,6 +15,12 @@
             crossorigin="anonymous"
         />
     </head>
+    <style>
+    body {
+  overflow-y: hidden;
+   overflow-x: hidden;
+        }
+    </style>
 
     <body>
         <header class="d-block d-sm-none">
@@ -25,6 +32,7 @@
 <main class="d-none d-sm-flex justify-content-center align-items-center vh-100 bg-light">
   <h1 class="text-danger text-center">vaše zariadenie nie je podporované</h1>
 </main>
+
 <main class="d-block d-sm-none vh-100 d-flex justify-content-center align-items-center bg-white text-center">
   <div>
     <h1 class="display-2 mb-5">Server status <span id="stats"> </span></h1>
@@ -44,17 +52,31 @@
         ></script>
         <script>
      
-
   function klik() {
     fetch('/klik')
       .then(resp => console.log("Odoslané na ESP"))
       .catch(err => console.error("Chyba:", err));
 
        alert("diiik jak ma kliklo");
-
   }
-  // testing function
-function ServerStatus(status){
+
+
+ async function updateStatus() {
+    try {
+      const response = await fetch("/online");
+      const data = await response.json();
+      ServerStatus(data.online);
+    } catch (e) {
+      console.error("Chyba pri fetchovaní /online:", e);
+      ServerStatus(false); // záložný fallback
+    }
+  }
+
+  // spusti hneď a potom opakuj každých 5 sekúnd:
+  updateStatus();
+  setInterval(updateStatus, 5000);
+
+     function ServerStatus(status){
 
             if(status){ // if true then ->
                 document.getElementById("stats").innerText="on";
@@ -66,7 +88,6 @@ function ServerStatus(status){
 
             }
 }
-
         </script>
     </body>
 </html>
