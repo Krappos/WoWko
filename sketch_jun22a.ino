@@ -65,7 +65,7 @@ void WiFiConnect() {
 
   if (WiFi.status() != WL_CONNECTED) {
     //Serial.println("Wi-Fi sa nepripojilo.");
-    // môžeš tu spraviť reset, zobraziť LEDku, vstúpiť do AP módu atď.
+
   }
   // Serial.print("Pripojené! IP adresa: ");
   // O2 -> testing - Serial.println(WiFi.localIP());
