@@ -1,0 +1,1 @@
+ESP32 WEBServer which wakes up machine from the internet, using magic packets and opened ports on the lan.
