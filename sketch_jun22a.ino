@@ -16,22 +16,18 @@ const char* password = "";
 bool online = false;
 
 // device MAC adress
-uint8_t ServerMac[] = { };
+uint8_t ServerMac[] = { xxxx, xxxx, xxxx, xxxx,xxxx, xxxx };
 // O4 -> testing - uint8_t ServerMac[] = { };
 
 // timing
 unsigned long startTime = millis();
 
-const unsigned long interval = 10000;
+const unsigned long interval = 10000; //10 sekund
 unsigned long previousMillis = 0;
 
 WebServer server(8080);            //opened port
-IPAddress target(xxx.xxx.xxx.xxx);  // IP ping server
+IPAddress target(xxx, xxx, xxxx, xxx);  // IP ping server
 WiFiUDP udp;
-
-void Pinger() {
-  (Ping.ping(target, 3)) ? online = true : online = false;
-}
 
 void handleRoot() {
   server.send(200, "text/html", htmlPage);
@@ -56,7 +52,6 @@ void WiFiConnect() {
   unsigned long startAttemptTime = millis();
 
   WiFi.begin(ssid, password);
-  // Serial.print("Pripájam sa na Wi-Fi ");
   // O1 -> testing  - Serial.print(ssid);
 
   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < 10000) {
@@ -65,7 +60,6 @@ void WiFiConnect() {
   }
 
   if (WiFi.status() != WL_CONNECTED) {
-    //Serial.println("Wi-Fi sa nepripojilo.");
   }
   // O2 -> testing - Serial.println(WiFi.localIP());
 }
@@ -73,11 +67,10 @@ void WiFiConnect() {
 void PingRepeat() {
   unsigned long currentMillis = millis();
 
-
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
-    Pinger();
+    (Ping.ping(target, 3)) ? online = true : online = false;
     // O3 -> testing - Serial.println("pingujem");
   }
 }
@@ -86,6 +79,7 @@ void handleKlik() {
   sendWOL();
   server.send(200, "text/plain", "OK");
 }
+
 void setup() {
 
   Serial.begin(115200);
@@ -95,12 +89,12 @@ void setup() {
 
   server.on("/", handleRoot);
   server.on("/klik", handleKlik);
-  server.begin();
-
   server.on("/online", HTTP_GET, []() {
     String json = String("{\"online\":") + (online ? "true" : "false") + "}";
     server.send(200, "application/json", json);
   });
+
+  server.begin();
 
   previousMillis = millis();
 }
@@ -109,6 +103,7 @@ void loop() {
 
   server.handleClient();
   PingRepeat();
+
 }
 
 // testing logs
