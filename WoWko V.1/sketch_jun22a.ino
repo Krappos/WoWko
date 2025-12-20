@@ -111,3 +111,6 @@ void loop() {
 // O2 -> vypis ip adresa siete
 // O3 -> testovanie millis
 // O4 -> testing mac free
+
+// úprava kodu a finalizácia
+//úprava  metoda na preporčet času všetkých uživateľov nie local
