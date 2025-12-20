@@ -24,11 +24,13 @@ void setup() {
 void loop() {
   struct tm timeinfo; 
 
+
 if(getLocalTime(&timeinfo)){
     int hour = timeinfo.tm_hour;
     int min = timeinfo.tm_min;
     int sec = timeinfo.tm_sec;
 }
+
 
 if(!getLocalTime(&timeinfo)){
     Serial.println("Čakám na synchronizáciu s NTP...");

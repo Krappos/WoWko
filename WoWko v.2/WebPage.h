@@ -1,0 +1,143 @@
+const char* htmlPage PROGMEM = R"rawliteral(
+<!doctype html>
+<html lang="en">
+    <head>
+        <title>WoWko</title>
+        <link rel="icon" type="image/x-icon" href="https://www.iconpacks.net/icons/2/free-user-icon-3296-thumb.png">
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+            crossorigin="anonymous"
+        />
+    </head>
+    <!-- Scroll block -->
+    <style>
+    body {
+  overflow-y: hidden;
+   overflow-x: hidden;
+        }
+    </style>
+
+    <body>
+        <header class="d-block d-sm-none">
+           <nav class="navbar justify-content-center navbar-light bg-primary ">
+  <span class="navbar-brand text-light h1 fs-1">Server Status</span>
+            </nav>
+        </header>
+
+<main class="d-none d-sm-flex justify-content-center align-items-center vh-100 bg-light">
+  <h1 class="text-danger text-center">vaše zariadenie nie je podporované</h1>
+</main>
+
+<main class="d-block d-sm-none vh-100 d-flex justify-content-center align-items-center bg-white text-center">
+  <div>
+   <p id="startmsg">odhadovaný čas spustenia: <span id="timer"></span></p>
+    <h1 class="display-2 mb-5">Server status <span id="stats"> </span></h1>
+    <button class="btn btn-primary btn-lg px-5 py-3" id="disabler"onclick="klik()">Wake me up</button>
+
+        <footer>
+        </footer>
+        <script
+            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
+            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
+            crossorigin="anonymous"
+        ></script>
+        <script>
+
+const serverStatusLabel = document.getElementById("stats");
+const disabledButton = document.getElementById("disabler");
+const startupmsg = document.getElementById("startmsg");
+const timerLabel = document.getElementById("timer");
+
+let seconds = 300;
+let timer = null;
+let serverOnline = false;
+let startupVisible = false;
+
+function klik() {
+    if (serverOnline || startupVisible) return; // už beží alebo už je aktívne
+
+    fetch('/klik')
+        .then(resp => console.log("Odoslané na ESP"))
+        .catch(err => console.error("Chyba:", err));
+
+    alert("Tvoj server sa spúšťa");
+
+    disabledButton.disabled = true;
+    startupmsg.style.opacity = 1;
+    startupVisible = true;
+
+    startTimer();
+}
+
+async function updateStatus() {
+    try {
+        const response = await fetch("/online");
+        const data = await response.json();
+        setServerStatus(data.online);
+    } catch (e) {
+        console.error("Chyba pri fetchovaní /online:", e);
+        setServerStatus(false); // fallback
+    }
+}
+
+function setServerStatus(status) {
+    serverOnline = status;
+
+    if (status) {
+        serverStatusLabel.innerText = "on";
+        serverStatusLabel.style.color = "green";
+        disabledButton.disabled = true;
+        startupmsg.style.opacity = 0;
+        startupVisible = false;
+
+        clearInterval(timer);
+        seconds = 300;
+        timerLabel.textContent = "";
+    } else {
+        serverStatusLabel.innerText = "off";
+        serverStatusLabel.style.color = "red";
+        disabledButton.disabled = false;
+
+        // startupmsg sa zobrazí až po kliknutí
+        if (!startupVisible) {
+            startupmsg.style.opacity = 0;
+        }
+    }
+}
+
+function startTimer() {
+    seconds = 300;
+    timer = setInterval(() => {
+        if (seconds <= 0) {
+            clearInterval(timer);
+            disabledButton.disabled = false;
+            timerLabel.textContent = "";
+            return;
+        }
+
+        const min = Math.floor(seconds / 60);
+        const sec = seconds % 60;
+        timerLabel.textContent = `${min}:${sec.toString().padStart(2, "0")}`;
+        seconds--;
+    }, 1000);
+}
+
+// Prvý update a následne každých 5 sekúnd
+updateStatus();
+setInterval(updateStatus, 5000);
+</script>
+    </body>
+</html>
+)rawliteral";
