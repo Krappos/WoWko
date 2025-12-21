@@ -26,12 +26,14 @@ unsigned long startTime = millis();
 const unsigned long interval = 10000; //10 sekund
 unsigned long ledInterval = 500; 
 
+unsigned long previousMillisLed = 0;
 unsigned long previousMillis = 0;
+
 
 bool ledState = false;
 bool blikanie = true;        
 int aktualnaLedka = LED_ERROR; 
-
+bool zapisaSa= false;
 
 WebServer server(8080);            //opened port
 IPAddress target(xxx, xxx, xxxx, xxx);  // IP ping server
@@ -44,6 +46,7 @@ void handleRoot() {
   }
 
   server.send(200, "text/html", htmlPage);
+
 }
 
 
@@ -62,6 +65,8 @@ void sendWOL() {
   Serial.println("🌙 Wake-on-LAN paket odoslaný!");
 }
 
+
+
 void WiFiConnect() {
   unsigned long startAttemptTime = millis();
 
@@ -78,19 +83,35 @@ void WiFiConnect() {
   // O2 -> testing - Serial.println(WiFi.localIP());
 }
 
+
+
+
 void PingRepeat() {
   unsigned long currentMillis = millis();
 
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
 
-    (Ping.ping(target, 3)) ? online = true : online = false;
+    if(Ping.ping(target, 3)){
+online = true;
+stavServerBezi();
+zapisaSa=false;
+    }
+    else if(zapisaSa){
+stavServerNebezi();
+    }
+    else{
+online = false;
+
+    }
     // O3 -> testing - Serial.println("pingujem");
   }
 }
 
+
 void handleKlik() {
   sendWOL();
+  stavServerStartuje();
   server.send(200, "text/plain", "OK");
 }
 
@@ -126,13 +147,23 @@ void stavServerBezi() {
 // Režim 2: Oranžová bliká (5s)
 void stavServerStartuje() {
   vypniVsetkyLed();             // Reset LEDiek
-  aktualnaLedka = LED_WARNING;  // Nastavíme cieľovú LED
+  aktualnaLedka = LED_OK;  // Nastavíme cieľovú LED
   ledInterval = 5000;              // Nastavíme čas
   blikanie = true;              // Povolíme časovač
   ledState = LOW;               // Reset stavu blikania
   previousMillis = millis();    // Reset odpočítavania
   Serial.println("Stav: Server štartuje (Loading)");
 }
+void stavServerNebezi() {
+  vypniVsetkyLed();             // Reset LEDiek
+  aktualnaLedka = LED_OK;  // Nastavíme cieľovú LED
+  ledInterval = 5000;              // Nastavíme čas
+  blikanie = true;              // Povolíme časovač
+  ledState = LOW;               // Reset stavu blikania
+  previousMillis = millis();    // Reset odpočítavania
+  Serial.println("Stav: Server štartuje (Loading)");
+}
+
 
 // Režim 3: Červená bliká (0.5s)
 void stavKritickaChyba() {
@@ -158,7 +189,7 @@ void updateLedTimer() {
 
   unsigned long currentMillis = millis();
 
-  if (currentMillis - previousMillis >=ledInterval) {
+  if (currentMillis - previousMillisLed >=ledInterval) {
     previousMillis = currentMillis;
 
     ledState = !ledState;
@@ -203,12 +234,6 @@ void loop() {
 
 }
 
-void ledStatusOk(int pin){
-
-
-
-}
-
 // testing logs
 // O1 -> vypis ssid overenie spravnosti siete
 // O2 -> vypis ip adresa siete
@@ -220,5 +245,5 @@ void ledStatusOk(int pin){
 
 
 //autentifikacia -> overenie cez http auth ✅
-///led status 
+///led status -> pridanie lediek ku chybám 
 //NTP status 
