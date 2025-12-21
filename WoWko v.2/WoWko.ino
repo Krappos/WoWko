@@ -9,13 +9,9 @@
 //files
 #include "WebPage.h"
 
-#define LED_OK 
-#define LED_WARNING 
-#define LED_ERROR 
-
-
-//pointer pre optimalizíciu kodu
-// SSID Init + declaration
+#define LED_OK 15
+#define LED_WARNING 16 
+#define LED_ERROR 17
 
 // ping status
 bool online = false;
@@ -28,7 +24,14 @@ uint8_t ServerMac[] = { xxxx, xxxx, xxxx, xxxx,xxxx, xxxx };
 unsigned long startTime = millis();
 
 const unsigned long interval = 10000; //10 sekund
+unsigned long ledInterval = 500; 
+
 unsigned long previousMillis = 0;
+
+bool ledState = false;
+bool blikanie = true;        
+int aktualnaLedka = LED_ERROR; 
+
 
 WebServer server(8080);            //opened port
 IPAddress target(xxx, xxx, xxxx, xxx);  // IP ping server
@@ -42,6 +45,7 @@ void handleRoot() {
 
   server.send(200, "text/html", htmlPage);
 }
+
 
 void sendWOL() {
   IPAddress bcastIP = ~WiFi.subnetMask() | WiFi.localIP();
@@ -90,10 +94,87 @@ void handleKlik() {
   server.send(200, "text/plain", "OK");
 }
 
+void mainAnimation(){
+  delay(1000);
+  digitalWrite(LED_OK, HIGH);
+  delay(500);
+  digitalWrite(LED_WARNING, HIGH);
+  delay(500);
+  digitalWrite(LED_ERROR, HIGH);
+  delay(2000);
+  digitalWrite(LED_OK, LOW);
+  delay(500);
+  digitalWrite(LED_WARNING, LOW);
+  delay(500);
+  digitalWrite(LED_ERROR, LOW);
+  delay(500);
+  digitalWrite(LED_OK, HIGH);
+  digitalWrite(LED_WARNING, HIGH);
+  digitalWrite(LED_ERROR, HIGH);
+  delay(500);
+  digitalWrite(LED_OK, LOW);
+  digitalWrite(LED_WARNING, LOW);
+  digitalWrite(LED_ERROR, LOW);
+}
+void stavServerBezi() {
+  blikanie = false;             
+  vypniVsetkyLed();             // Reset LEDiek
+  digitalWrite(LED_OK, HIGH);   // Zapneme len zelenú
+  Serial.println("Stav: Server beží (OK)");
+}
+
+// Režim 2: Oranžová bliká (5s)
+void stavServerStartuje() {
+  vypniVsetkyLed();             // Reset LEDiek
+  aktualnaLedka = LED_WARNING;  // Nastavíme cieľovú LED
+  ledInterval = 5000;              // Nastavíme čas
+  blikanie = true;              // Povolíme časovač
+  ledState = LOW;               // Reset stavu blikania
+  previousMillis = millis();    // Reset odpočítavania
+  Serial.println("Stav: Server štartuje (Loading)");
+}
+
+// Režim 3: Červená bliká (0.5s)
+void stavKritickaChyba() {
+  vypniVsetkyLed();
+  aktualnaLedka = LED_ERROR;
+  ledInterval = 500;
+  blikanie = true;
+  ledState = LOW;
+  previousMillis = millis();
+  Serial.println("Stav: KRITICKÁ CHYBA!");
+}
+
+
+void vypniVsetkyLed() {
+  digitalWrite(LED_OK, LOW);
+  digitalWrite(LED_WARNING, LOW);
+  digitalWrite(LED_ERROR, LOW);
+}
+
+void updateLedTimer() {
+  // Ak je blikanie vypnuté, funkcia sa okamžite ukončí a nezdržuje procesor
+  if (!blikanie) return; 
+
+  unsigned long currentMillis = millis();
+
+  if (currentMillis - previousMillis >=ledInterval) {
+    previousMillis = currentMillis;
+
+    ledState = !ledState;
+    digitalWrite(aktualnaLedka, ledState);
+  }
+}
+
 void setup() {
 
   Serial.begin(115200);
   delay(100);  //oneskorenie pre stabilitu seriálky
+
+  
+   pinMode(LED_OK, OUTPUT);
+  pinMode(LED_WARNING, OUTPUT);
+  pinMode(LED_ERROR, OUTPUT);
 
   WiFiConnect();
 
@@ -107,12 +188,24 @@ void setup() {
   server.begin();
 
   previousMillis = millis();
+
+  mainAnimation();
+  
+  stavKritickaChyba(); 
+
 }
 
 void loop() {
 
   server.handleClient();
   PingRepeat();
+  updateLedTimer();
+
+}
+
+void ledStatusOk(int pin){
+
+
 
 }
 
@@ -124,3 +217,8 @@ void loop() {
 
 // úprava kodu a finalizácia
 //úprava  metoda na preporčet času všetkých uživateľov nie local
+
+
+//autentifikacia -> overenie cez http auth ✅
+///led status 
+//NTP status 
