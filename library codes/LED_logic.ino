@@ -76,7 +76,7 @@ void stavServerBezi() {
 // Režim 2: Oranžová bliká (5s)
 void stavServerStartuje() {
   vypniVsetkyLed();             // Reset LEDiek
-  aktualnaLedka = LED_WARNING;  // Nastavíme cieľovú LED
+  aktualnaLedka = LED_OK;  // Nastavíme cieľovú LED
   ledInterval = 5000;              // Nastavíme čas
   blikanie = true;              // Povolíme časovač
   ledState = LOW;               // Reset stavu blikania
